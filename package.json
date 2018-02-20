@@ -1,0 +1,24 @@
+{
+  "name": "cas-secure",
+  "version": "1.0.0",
+  "description": "Secure Express/Connect API's against a CAS Server",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agmoyano/cas-secure.git"
+  },
+  "keywords": [
+    "CAS",
+    "API",
+    "Secure"
+  ],
+  "author": "Agustín Moyano",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/agmoyano/cas-secure/issues"
+  },
+  "homepage": "https://github.com/agmoyano/cas-secure#readme"
+}
