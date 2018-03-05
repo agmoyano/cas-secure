@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/agmoyano/cas-secure/issues"
   },
-  "homepage": "https://github.com/agmoyano/cas-secure#readme"
+  "homepage": "https://github.com/agmoyano/cas-secure#readme",
+  "dependencies": {
+    "xml2js": "^0.4.19"
+  }
 }
