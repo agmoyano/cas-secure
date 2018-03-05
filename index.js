@@ -12,7 +12,7 @@ module.exports =  {
         switch(options.version) {
             case '1':
                 options.validateUrl = options.validateUrl||'/validate';
-                options.this.validate = function(body, callback) {
+                options.validate = function(body, callback) {
                     var lines = body.split('\n');
                     if (lines[ 0 ] === 'yes' && lines.length >= 2) {
                         return callback(null, {user: lines[ 1 ]});
@@ -29,7 +29,7 @@ module.exports =  {
                 options.validateUrl = options.validateUrl||'/serviceValidate';
             default:
                 options.validateUrl = options.validateUrl||'/p3/serviceValidate';
-                options.this.validate = function(body, callback) {
+                options.validate = function(body, callback) {
                     parseXML(body, {
                         trim: true,
                         normalize: true,
@@ -62,7 +62,7 @@ module.exports =  {
         }
         this.options = options;
         this.parsed = url.parse(options.base_url+options.validateUrl);
-        this.client = parsed.protocol == 'https'?https:http;
+        this.client = this.parsed.protocol == 'https'?https:http;
         return this;
     },
     /**
