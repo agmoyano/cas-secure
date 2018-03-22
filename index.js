@@ -1,14 +1,17 @@
 var http = require('http');
 var https = require('https');
-var url = require('url');
+const { URL } = require('url');
+var qs = require('querystring');
 var parseXML      = require('xml2js').parseString;
 var XMLprocessors = require('xml2js/lib/processors');
+var debug = require('debug')('cas-secure');
 
 module.exports =  {
     set: function(options) {
         if(typeof options == 'string') options = {base_url: options};
         if(!options.base_url) throw new Error('No CAS Base URL provided');
         if(!options.version||['1','2','3'].indexOf(options.version+'')==-1) options.version = '3';
+        if(!options.action||['block', 'pass', 'ignore'].indexOf(options.action)==-1) options.action = 'block';
         switch(options.version) {
             case '1':
                 options.validateUrl = options.validateUrl||'/validate';
@@ -26,9 +29,9 @@ module.exports =  {
                 }
                 break;
             case '2':
-                options.validateUrl = options.validateUrl||'/serviceValidate';
+                options.validateUrl = options.validateUrl||'/proxyValidate';
             default:
-                options.validateUrl = options.validateUrl||'/p3/serviceValidate';
+                options.validateUrl = options.validateUrl||'/p3/proxyValidate';
                 options.validate = function(body, callback) {
                     parseXML(body, {
                         trim: true,
@@ -36,7 +39,6 @@ module.exports =  {
                         explicitArray: false,
                         tagNameProcessors: [ XMLprocessors.normalize, XMLprocessors.stripPrefix ]
                     }, function(err, result) {
-                        console.log(err)
                         if (err) {
                             return callback(new Error('Response from CAS server was bad.'));
                         }
@@ -53,15 +55,16 @@ module.exports =  {
                                 return callback(new Error( 'CAS authentication failed.'));
                             }
                         }
-                        catch (err) {
-                            console.log(err);
+                        catch (error) {
+                            debug("exception stacktrace: ");
+                            debug(error);
                             return callback(new Error('CAS authentication failed.'));
                         }
                     });
                 };
         }
         this.options = options;
-        this.parsed = url.parse(options.base_url+options.validateUrl);
+        this.parsed = new URL(options.base_url+options.validateUrl);
         this.client = this.parsed.protocol == 'https'?https:http;
         return this;
     },
@@ -72,21 +75,32 @@ module.exports =  {
      *  'ignore': just call next without writing req.cas
      */
     validate: function(action) {
-        if(!action||['block', 'pass', 'ignore'].indexOf(action)==-1) action='block';
+        if(!action||['block', 'pass', 'ignore'].indexOf(action)==-1) action=this.options.action;
+        var self = this;
         return function(req, res, next) {
             var doExit = function(status, message) {
-                if(action == 'block') return res.writeHead(status, message);
-                next(action=='pass'?nessage:null);
+                debug('Status: '+status+' '+message);
+                if(action == 'block') {
+                    res.writeHead(status);
+                    return res.end(message);
+                }
+                var error = new Error(message);
+                error.statusCode = status;
+                next(action=='pass'?error:null);
             }
             var ticket = req.query&&req.query.ticket;
             if(!ticket && req.headers.authorization) {
                 var split = req.headers.authorization.split(' ');
                 if(split[0]=='Bearer') ticket = split[1];
             }
-            if(!ticket) return doExit(401, 'Unauthorized. No service ticket found or invalid.');
-            parsed.query = {ticket: ticket};
-            var self = this;
-            var request = this.client.request(this.parsed, function(response) {
+            if(!ticket) {
+                debug('no ticket found');
+                return doExit(401, 'Unauthorized. No service ticket found or invalid.');
+            }
+            var service = req.query&&req.query.service;
+            self.parsed.search = qs.stringify({ticket: ticket, service: self.options.service||req.headers.host});
+            debug('Sending request to: '+self.parsed.href);
+            var request = self.client.request(self.parsed.href, function(response) {
                 var body='';
                 response.on('data', function(chunk) {
                 body += chunk; 
@@ -95,10 +109,14 @@ module.exports =  {
                     doExit(500, 'Error on validation response: '+error.message);
                 });
                 response.on('end', function() {
+                    debug('Response body: '+body);
                     self.options.validate(body, function(error, data) {
-                        if(error) return doExit(401, 'Unauthorized. No service ticket found or invalid.');
+                        if(error) {
+                            debug('Error on validation: '+error.message);
+                            return doExit(401, 'Unauthorized. No service ticket found or invalid.');
+                        }
                         req.cas = data;
-                        next();
+                        process.nextTick(next);
                     });
                 });
             });
