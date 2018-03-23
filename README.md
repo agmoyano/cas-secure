@@ -10,7 +10,7 @@ npm install --save cas-secure
 
 ## How to use
 
-1. ### Require package
+### Require Package
     ```javascript
     var secure = require('cas-secure').set(options);
     ```
@@ -31,7 +31,7 @@ npm install --save cas-secure
         * Default for protocol version 3: _/p3/proxyValidate_
     * **service** [Optional]: this service identification. Defaults to the value of the Host header.
 
-1. ### Use middleware
+### Use middleware
 
     ```javascript
     app.use(secure.validate(action), function SecuredMiddleware(req, res, next){
