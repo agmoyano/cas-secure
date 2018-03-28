@@ -35,6 +35,10 @@ Where _options_ is one of the following:
 ### Use middleware
 
 ```javascript
+/*
+    secure.validate expects the ticket to be found in "ticket" query parameter (req.query.ticket), 
+    or in "Authorization" header (req.headers.authorization) of Bearer type .
+*/
 app.use(secure.validate(action), function SecuredMiddleware(req, res, next){
     /* 
     Your code goes here
