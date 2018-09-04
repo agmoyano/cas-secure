@@ -1,11 +1,11 @@
 # cas-secure
 
-Secure Express/connect APIs against a CAS server
+Secure Express/Connect APIs against a CAS server
 
 ## Install
 
 ```bash
-npm install --save cas-secure
+npm install cas-secure --save
 ```
 
 ## How to use
@@ -20,7 +20,7 @@ Where _options_ is one of the following:
 
 * __String__: The base url of _CAS_ (For example: _http://my.cas-server.com/cas_).
 * __Object__: An object with the following properties:
-* **base_ur** [Mandaory]: The base url of _CAS_ (For example: _http://my.cas-server.com/cas_).
+* **base_url** [Mandaory]: The base url of _CAS_ (For example: _http://my.cas-server.com/cas_).
 * **version** [Optional]: _CAS_ protocol version. Posible values are 1, 2 or 3. _Default 3_.
 * **action** [Optional]: Default action that **cas_secure** should take with failed authentication (_Default block_):
     * **block**: Returns a _401 (Unauthorized)_ status code.
@@ -36,11 +36,11 @@ Where _options_ is one of the following:
 
 ```javascript
 /*
-    secure.validate expects the ticket to be found in "ticket" query parameter (req.query.ticket), 
+    secure.validate expects the ticket to be found in "ticket" query parameter (req.query.ticket),
     or in "Authorization" header (req.headers.authorization) of Bearer type .
 */
 app.use(secure.validate(action), function SecuredMiddleware(req, res, next){
-    /* 
+    /*
     Your code goes here
     If user got authenticated:
         * req.cas.user will have user id
@@ -51,5 +51,3 @@ app.use(secure.validate(action), function SecuredMiddleware(req, res, next){
 _action_ can be one of _block_, _pass_ or _ignore_, and will override the configured default action.
 
 If no action is provided, will use the default one.
-
-
