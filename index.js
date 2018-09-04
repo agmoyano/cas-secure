@@ -122,7 +122,7 @@ module.exports = {
       }
 
       if (!ticket) {
-        debug('no ticket found');
+        debug('No ticket found!');
         return doExit(401, 'Unauthorized. No service ticket found or invalid.');
       }
 
