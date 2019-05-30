@@ -65,7 +65,7 @@ module.exports =  {
         }
         this.options = options;
         this.parsed = new URL(options.base_url+options.validateUrl);
-        this.client = this.parsed.protocol == 'https'?https:http;
+        this.client = this.parsed.protocol == 'https:'?https:http;
         return this;
     },
     /**
